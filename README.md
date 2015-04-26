@@ -18,15 +18,15 @@ Start a receiver (this is not strictly necessary) on host foo:
 foo> mrcv :7878
 
 Start a sender with:
-      duration 1 second, 
-      1000 Hz (packets-per-second)
-      packet size (payload) 64 bytes
-local> mcast -p 1000 -s 64 -d 1 foo:7878
-local: Sending to 13.24.15.176:7878
+- duration 1 second, 
+- 1000 Hz (packets-per-second)
+- packet size (payload) 64 bytes
+```
+ local> mcast -p 1000 -s 64 -d 1 foo:7878
+ local: Sending to 13.24.15.176:7878
         pkt_size= 64 (total = 92), duration = 1 s, period = 1000 us
-1.000003 s,  999.997000 pps
-mcast done, 1000 packets sent from local to 13.24.15.176
-local>
-
+ 1.000003 s,  999.997000 pps
+ mcast done, 1000 packets sent from local to 13.24.15.176
+```
 
 

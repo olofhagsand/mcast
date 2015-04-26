@@ -2,7 +2,6 @@
  *
  *
  *  mcast.c - UDP uni and multicast traffic generator.
- *  CVS Version: $Id: mcast.c,v 1.13 2009/05/09 14:20:46 olof Exp $#
  *
  *  Author: Olof Hagsand. 
  *  Copyright: Olof Hagsand. 

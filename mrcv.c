@@ -2,7 +2,6 @@
  *
  *
  *  mrcv.c - UDP uni and multicast tester.
- *  CVS Version: $Id: mrcv.c,v 1.9 2011/10/13 08:23:15 olof Exp $#
  *
  *  Author: Olof Hagsand. 
  *  Copyright: Olof Hagsand. 
