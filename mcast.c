@@ -297,7 +297,7 @@ usage(char *argv0)
 	    "\t-t <ttl>\tOrigin _multicast_ TTL value (default: %u)\n"
 	    "\t-i <ifname>\tSending interface name \n"
 	    "\t-d <sec>\tDuration of test in seconds (default: %ds)\n"
-	    "\t-B <nr>\tJust send a burst of <nr> packets. Overrides -d.\n"
+	    "\t-B <nr>\t\tJust send a burst of <nr> packets. Overrides -d.\n"
 	    "\t-s <len>\tPacket length in bytes (default: %d)\n"
 	    "\t-S <sec>\tStart time until start of test (default 0)\n"
 	    "\t-p <us>\t\tInter-packet interval in us (default: %u us)\n"

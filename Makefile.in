@@ -29,7 +29,7 @@ CFLAGS  = @CFLAGS@  @DEFS@
 LDFLAGS = @LDFLAGS@
 LIBS    = @LIBS@
 INCLUDES = -I. -I@srcdir@ @INCLUDES@
-INSTALL = @INSTALL@
+INSTALL = install
 
 SRC	= mcast.c mrcv.c 
 #bcast.c brcv.c mrouteadd.c
