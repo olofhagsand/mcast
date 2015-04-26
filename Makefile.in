@@ -1,0 +1,80 @@
+#
+# 
+# Makefile for MCAST.
+# CVS Version: $Id: Makefile.in,v 1.5 2011/10/13 08:23:15 olof Exp $ 
+#
+# Copyright (C) 2001 Olof Hagsand
+#
+# This software is a part of Mcast. A very simple traffic generator
+# and analyzer especially tuned for IP multicast, although it is
+# useful for unicast too.
+# Mcast is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#  Mcast is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# You should have received a copy of the GNU General Public License
+# along with Mcast; see the file COPYING.
+
+srcdir  = @srcdir@
+prefix  = @prefix@
+exec_prefix  = @exec_prefix@
+bindir  = @bindir@
+CC	= @CC@
+
+CFLAGS  = @CFLAGS@  @DEFS@
+LDFLAGS = @LDFLAGS@
+LIBS    = @LIBS@
+INCLUDES = -I. -I@srcdir@ @INCLUDES@
+INSTALL = @INSTALL@
+
+SRC	= mcast.c mrcv.c 
+#bcast.c brcv.c mrouteadd.c
+OBJS    = $(SRC:.c=@OBJ_SUFFIX@) 
+APPS	= $(SRC:.c=@EXE_SUFFIX@)
+
+all:	$(APPS)
+tags:	;etags *.[ch]
+clean:  ;rm -f $(APPS) $(OBJS)
+distclean:	clean  
+	rm -f Makefile config.log config.status
+	rm -rf autom4te.cache
+
+# Default rule  .c.o:	
+%@OBJ_SUFFIX@ : @srcdir@/%.c
+	$(CC) $(INCLUDES) $(CFLAGS) -c $<
+# For linux?
+.c.o:
+	$(CC) $(INCLUDES) $(CFLAGS) -c $<
+
+mrcv@EXE_SUFFIX@ :	mrcv.c
+	$(CC) $(CFLAGS) mrcv.c $(LDFLAGS) $(LIBS) -o $@ 
+
+mcast@EXE_SUFFIX@ :	mcast.c
+	$(CC) $(CFLAGS) mcast.c $(LDFLAGS) $(LIBS) -o $@ 
+
+brcv@EXE_SUFFIX@ :	brcv.c
+	$(CC) $(CFLAGS) brcv.c $(LDFLAGS) $(LIBS) -o $@ 
+
+bcast@EXE_SUFFIX@ :	bcast.c
+	$(CC) $(CFLAGS) bcast.c $(LDFLAGS) $(LIBS) -o $@ 
+
+
+mrouteadd@EXE_SUFFIX@ :	mrcv.c
+	$(CC) $(CFLAGS) mrcv.c $(LDFLAGS) $(LIBS) -o $@ 
+
+install:	$(APPS)
+	$(INSTALL) -d $(bindir)
+	for i in $(APPS); do \
+		$(INSTALL) $$i $(bindir)/$$i; \
+	done
+
+uninstall:
+	for i in $(APPS); do \
+		rm -f $(bindir)/$$i; \
+	done
+
+
