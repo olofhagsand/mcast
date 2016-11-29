@@ -1,0 +1,8 @@
+sudo make docker
+make push
+
+sudo docker run -ti olofhagsand/mcast sleep 3600
+sudo docker exec -ti 917bd2fa135e mrcv 225.1.1.1:7878
+or
+sudo docker run -ti olofhagsand/mcast mrcv 225.1.1.1:7878
+
