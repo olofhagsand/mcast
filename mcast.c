@@ -115,6 +115,7 @@ static int debug = 0;
 static int quiet = 0;
 static char sendbuf[BUFSIZE];
 struct timeval T0; /* start */
+static char *payload = NULL;
 
 /*
  * Set a signal handler.
@@ -302,7 +303,8 @@ usage(char *argv0)
 	    "\t-p <us>\t\tInter-packet interval in us (default: %u us)\n"
 	    "\t-P <ms>\t\tPoll period in ms (default %u ms). 0 means busy loop\n"
 	    "\t-l <port>\tLocal sender UDP port (default random)\n"
-	    "\t-T <number>\tTos value in sending traffic (default 0)\n", 
+	    "\t-T <number>\tTos value in sending traffic (default 0)\n" 
+	    "\t-L <string>\tPayload string\n", 
 	    argv0,
 	    DEFAULT_TTL,
 	    DEFAULT_DURATION_S,
@@ -318,9 +320,16 @@ static int
 send_one(int s, struct sockaddr *addr, int addrlen, int len)
 {
     struct timeval t;
-    *(int*)sendbuf = htonl(nr_packets);
+    char          *p;
+
+    p = sendbuf;
+    *(int*)p = htonl(nr_packets);
     t = gettimestamp();
-    memcpy(sendbuf+sizeof(int), &t, sizeof(t)); /* XXX: not byte-swapped */
+    p += sizeof(int);
+    memcpy(p, &t, sizeof(t)); /* XXX: not byte-swapped */
+    p += sizeof(t);
+    if (payload)
+	strncpy(p, payload, len-(p-sendbuf));
     if (debug && (nr_packets%10000 == 0))
 	tg_log(len);
     if ((sendto(s, sendbuf, len, 0x0, addr, addrlen)) < 0){
@@ -532,6 +541,12 @@ main(int argc, char *argv[])
 		usage(argv0);
 	    if (sscanf(*argv, "%d", &tos) != 1)
 		usage(argv0);
+	    break;
+	case 'L': /* Payload string */
+	    argv++;argc--;
+	    if (argc == 0)
+		usage(argv0);
+	    payload = *argv;
 	    break;
 	}
     }

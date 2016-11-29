@@ -18,6 +18,10 @@
 # along with Mcast; see the file COPYING.
 #
 AC_INIT(mcast.c)
+
+# Default CFLAGS unless set by environment.
+: ${CFLAGS="-O2"}
+
 AC_SUBST(CC)
 AC_SUBST(CFLAGS)
 AC_SUBST(LDFLAGS)

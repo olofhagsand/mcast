@@ -2013,6 +2013,10 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
 
+# Default CFLAGS unless set by environment.
+: ${CFLAGS="-O2"}
+
+
 
 
 
