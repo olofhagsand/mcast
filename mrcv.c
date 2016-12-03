@@ -382,7 +382,9 @@ usage(char *argv0)
 	    "\t-b \t\tBacklog (send info back to sender)\n"
 	    "\t-t <nr> \tTimeout in counts\n" 
 	    "\t-f <filename>\tLog to file\n"
-	    "\t-i <ifname>\tReceiving interface name \n",
+	    "\t-i <ifname>\tReceiving interface name \n"
+	    "\t-q \tQuiet\n"
+	    "\t-v \tVerbose\n",
 	    argv0);
     exit(0);
 }
@@ -413,28 +415,35 @@ send_one(int s, struct sockaddr *addr, int addrlen, char *buf, int len)
 
 
 int
-main(int argc, char *argv[])
+main(int   argc, 
+     char *argv[])
 {
-    char *argv0 = argv[0];
-    int s, c;
-    int saddr;
-    int caddr;
-    int conn = 0;
-    struct in_addr ifaddr;
-    unsigned short port;
+    char              *argv0 = argv[0];
+    int                s;
+    int                c;
+    int                saddr;
+    int                caddr;
+    int                conn = 0;
+    struct in_addr     ifaddr;
+    unsigned short     port;
     struct sockaddr_in addr;
-    char *pstr, hostname[64];
-    char *ifname = NULL;
-    struct timeval t0, t;
-    int pkts0 = 0;
-    fd_set fdset;
-    int timeout = 0, count = 0;
-    unsigned int i, last;
-    int backlog = 0;
+    char              *pstr;
+    char               hostname[64];
+    char              *ifname = NULL;
+    struct timeval     t;
+    //    struct timeval     t0;
+    int                pkts0 = 0;
+    fd_set             fdset;
+    int                timeout0 = 1;
+    unsigned int       i;
+    //    unsigned int       last;
+    int                backlog = 0;
     struct sockaddr_in from;
-    int fromlen = 0;
-    char *filename = NULL;
-    FILE *f = NULL;
+    int                fromlen = 0;
+    char              *filename = NULL;
+    FILE              *f = NULL;
+    int                quiet = 0;
+    int                verbose = 0;
 
     argv++;argc--;
     if (argc == 0)
@@ -453,6 +462,12 @@ main(int argc, char *argv[])
 	case 'D' : /* debug */
 	    debug++;
 	    break;
+	case 'q' : /* quiet */
+	    quiet++;
+	    break;
+	case 'v' : /* verbose */
+	    verbose++;
+	    break;
 	case 'b' : /* backlog */
 	    backlog++;
 	    break;
@@ -460,7 +475,7 @@ main(int argc, char *argv[])
 	    argv++;argc--;
 	    if (argc == 0)
 		usage(argv0);
-	    timeout = atoi(*argv);
+	    timeout0 = atoi(*argv);
 	    break;
 	case 'f' : /* filename */
 	    argv++;argc--;
@@ -584,22 +599,22 @@ main(int argc, char *argv[])
 	    fprintf(stderr, "\n");
     }
 
-    t0 = gettimestamp();
+    //    t0 = gettimestamp();
     t.tv_sec = 1;     t.tv_usec = 0;
-    last = -1;
+    //    last = -1;
     for (;;){
 	int len = 0, n;
 	char buf[8000];
+	struct timeval timeout = {timeout0,0};
     
 	FD_ZERO(&fdset);
 	FD_SET(s, &fdset);
-	n = select(FD_SETSIZE, &fdset, NULL, NULL, NULL); 
+	n = select(FD_SETSIZE, &fdset, NULL, NULL, &timeout); 
 	if (n == -1) {
 	    perror ("select");
 	    exit(1);
 	}
 	if (n==0){     /* Timeout */
-
 	    t.tv_sec = 1;     t.tv_usec = 0;
 	    if (pkts != pkts0){
 		pkts0 = pkts;
@@ -607,18 +622,13 @@ main(int argc, char *argv[])
 		/*
 		 * Send a UDP packet back with reported number of pkts.
 		 */
-		if (backlog && fromlen != 0)
+		if (backlog && fromlen != 0){
 		    if ((sendto(s, (void*)&pkts, sizeof(pkts), 0x0, 
 				(struct sockaddr*)&from, fromlen)) < 0){
 			perror("sendto");
 			exit(0);
 		    }
-		count = 0;
-	    }
-	    else{
-		count++;
-		if (timeout != 0 && count > timeout)
-		    break; /* timeout */
+		}
 	    }
 	}
 	if (FD_ISSET(s, &fdset)) {
@@ -669,26 +679,28 @@ main(int argc, char *argv[])
 		firstpkt = gettimestamp();
 	    }
 	    lastpkt = gettimestamp();
+	    if (quiet)
+		continue;
 	    t = gettimestamp();
-	    send_one(s, msg.msg_name, msg.msg_namelen, buf, len);
+	    //	    send_one(s, msg.msg_name, msg.msg_namelen, buf, len);
 //	    t = timevalsub(gettimestamp(), t0);
 	    struct timeval t2 = timevalsub(t, *ti);
 	    struct tm *tm;
 	    tm=localtime(&t.tv_sec);
-	    fprintf(stderr, "%u %lu.%06lu\n", i, t2.tv_sec, t2.tv_usec);
-/*
-	    fprintf(stdout, "%u %d %d-%02d-%02d %02d:%02d:%02d.%06lu\n", 
-		    i,
-		    ttl,
-		    1900+tm->tm_year,
-		    tm->tm_mon+1,
-		    tm->tm_mday,
-		    tm->tm_hour,
-		    tm->tm_min,
-		    tm->tm_sec,
-		    t.tv_usec
-		);
-*/
+	    if (verbose)
+		fprintf(stdout, "%u %d %d-%02d-%02d %02d:%02d:%02d.%06lu\n", 
+			i,
+			ttl,
+			1900+tm->tm_year,
+			tm->tm_mon+1,
+			tm->tm_mday,
+			tm->tm_hour,
+			tm->tm_min,
+			tm->tm_sec,
+			t.tv_usec
+			);
+	    else
+		fprintf(stderr, "%u %lu.%06lu\n", i, t2.tv_sec, t2.tv_usec);
 	    if (f){
 		if (fwrite(buf, 1, len, f) != len)
 		    fprintf(stderr, "Error when writing to %s\n", filename);

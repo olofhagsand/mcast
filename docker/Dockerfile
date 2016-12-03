@@ -18,8 +18,12 @@
 # <http://www.gnu.org/licenses/>.
 #
 
-FROM base/archlinux:latest
+FROM ubuntu:latest
 MAINTAINER Olof Hagsand <olof@hagsand.se>
+ENV DEBIAN_FRONTEND noninteractive
+RUN apt-get update 
+RUN apt-get install -y iperf3
+#RUN apt-get install -y netperf
 COPY mcast /usr/bin/
 COPY mrcv /usr/bin/
 #ENTRYPOINT ["mcast"]
