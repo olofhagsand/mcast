@@ -300,6 +300,7 @@ usage(char *argv0)
 	    "\t-B <nr>\t\tJust send a burst of <nr> packets. Overrides -d.\n"
 	    "\t-s <len>\tPacket length in bytes (default: %d)\n"
 	    "\t-S <sec>\tStart time until start of test (default 0)\n"
+	    "\t-x <len>\tSet transmit socket buffer\n"
 	    "\t-p <us>\t\tInter-packet interval in us (default: %u us)\n"
 	    "\t-P <ms>\t\tPoll period in ms (default %u ms). 0 means busy loop\n"
 	    "\t-l <port>\tLocal sender UDP port (default random)\n"
@@ -324,6 +325,7 @@ send_one(int s, struct sockaddr *addr, int addrlen, int len)
 
     p = sendbuf;
     *(int*)p = htonl(nr_packets);
+
     t = gettimestamp();
     p += sizeof(int);
     memcpy(p, &t, sizeof(t)); /* XXX: not byte-swapped */
@@ -416,31 +418,37 @@ ifname2addr(const char *ifname, struct in_addr *ifaddr)
 int
 main(int argc, char *argv[])
 {
-    char *argv0 = argv[0];
-    int s, c, n;
-    int saddr;
-    unsigned short port;
-    u_char ttl = DEFAULT_TTL;
-    char *pstr, hostname[64], hostname0[64];
+    char              *argv0 = argv[0];
+    int                s;
+    int                c;
+    int                n;
+    int                saddr;
+    unsigned short     port;
+    u_char             ttl = DEFAULT_TTL;
+    char              *pstr;
+    char               hostname[64];
+    char               hostname0[64];
     struct sockaddr_in addr;
-    struct sockaddr *addrp;
-    int addrlen;
-    char *ifname = NULL;
-    struct in_addr ifaddr;
-    long long duration_s = DEFAULT_DURATION_S;
-    int pkt_size = DEFAULT_PKT_SIZE;
-    int packet_period_us = DEFAULT_PACKET_PERIOD_US; /* Time between packets */
-    unsigned short lport = 0;
-    struct timeval poll_period_tv;
-    fd_set fdset;
-    double start_s = 0;
-    int len, backlog = 0;
-    int tos = 0;
-    int poll_period_ms = DEFAULT_POLL_PERIOD_MS;
-    int burst = 0;
+    struct sockaddr   *addrp;
+    int                addrlen;
+    char              *ifname = NULL;
+    struct in_addr     ifaddr;
+    long long          duration_s = DEFAULT_DURATION_S;
+    int                pkt_size = DEFAULT_PKT_SIZE;
+    int                packet_period_us = DEFAULT_PACKET_PERIOD_US; /* Time between packets */
+    unsigned short     lport = 0;
+    struct timeval     poll_period_tv;
+    fd_set             fdset;
+    double             start_s = 0;
+    int                len;
+    int                backlog = 0;
+    int                tos = 0;
+    int                poll_period_ms = DEFAULT_POLL_PERIOD_MS;
+    int                burst = 0;
+    int                sockbuflen = 0;
 #ifdef WIN32
-    HWND _hwnd; /* Braindead: need to create windows for events */
-    UINT polltimer = 0;  /*Timer interval for receiving */
+    HWND              _hwnd; /* Braindead: need to create windows for events */
+    UINT               polltimer = 0;  /*Timer interval for receiving */
 #endif
 
     argv++;argc--;
@@ -508,6 +516,12 @@ main(int argc, char *argv[])
 	    if (argc == 0)
 		usage(argv0);
 	    start_s = atof(*argv);
+	    break;
+	case 'x' : /* socket buffer */
+	    argv++;argc--;
+	    if (argc == 0)
+		usage(argv0);
+	    sockbuflen = atoi(*argv);
 	    break;
 	case 'p' : /* period in us (time between packets) */
 	    argv++;argc--;
@@ -649,6 +663,22 @@ main(int argc, char *argv[])
 	}
     }
 #endif /* IP_TOS */
+    if (sockbuflen){
+	int n;
+	socklen_t nlen = sizeof(n);
+
+	if (getsockopt(s, SOL_SOCKET, SO_SNDBUF, &n, &nlen) == -1) {
+	    perror("getsockopt(SNDBUF)");
+	    exit(1);
+	}
+	if (setsockopt(s, SOL_SOCKET, SO_SNDBUF, &sockbuflen, 
+		       sizeof(sockbuflen)) == -1) {
+	    perror("setsockopt(SNDBUF)");
+	    exit(1);
+	}
+	fprintf(stderr, "Setting rx sockbuflen:%d -> %d\n", n, sockbuflen);
+    }
+
 
     argv++;argc--;
     addr.sin_family = AF_INET;

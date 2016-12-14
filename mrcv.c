@@ -381,10 +381,11 @@ usage(char *argv0)
 	    "\t-D \t\tDebug\n"
 	    "\t-b \t\tBacklog (send info back to sender)\n"
 	    "\t-t <nr> \tTimeout in counts\n" 
+	    "\t-x <len>\tSet rx socket buffer\n"
 	    "\t-f <filename>\tLog to file\n"
 	    "\t-i <ifname>\tReceiving interface name \n"
-	    "\t-q \tQuiet\n"
-	    "\t-v \tVerbose\n",
+	    "\t-q \t\tQuiet\n"
+	    "\t-v \t\tVerbose\n",
 	    argv0);
     exit(0);
 }
@@ -434,7 +435,7 @@ main(int   argc,
     //    struct timeval     t0;
     int                pkts0 = 0;
     fd_set             fdset;
-    int                timeout0 = 1;
+    int                timeout0 = 2;
     unsigned int       i;
     //    unsigned int       last;
     int                backlog = 0;
@@ -444,6 +445,8 @@ main(int   argc,
     FILE              *f = NULL;
     int                quiet = 0;
     int                verbose = 0;
+    int                sockbuflen = 0;
+    int                yes = 1;
 
     argv++;argc--;
     if (argc == 0)
@@ -476,6 +479,12 @@ main(int   argc,
 	    if (argc == 0)
 		usage(argv0);
 	    timeout0 = atoi(*argv);
+	    break;
+	case 'x' : /* socket buffer */
+	    argv++;argc--;
+	    if (argc == 0)
+		usage(argv0);
+	    sockbuflen = atoi(*argv);
 	    break;
 	case 'f' : /* filename */
 	    argv++;argc--;
@@ -558,18 +567,30 @@ main(int   argc,
     addr.sin_family = AF_INET;
     addr.sin_addr.s_addr = INADDR_ANY; 
     addr.sin_port = htons(port);
-    {
-	int yes = 1;
-	if (setsockopt(s, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) < 0){
+    if (setsockopt(s, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) < 0){
 	perror("setsockopt");
 	exit(0);
-	}
-
-	if(setsockopt(s, SOL_IP, IP_RECVTTL, &yes, sizeof(int))<0){
-	    perror("IP_RECVTTL on rcv");
-	    exit(1);
-	};
     }
+    if(setsockopt(s, SOL_IP, IP_RECVTTL, &yes, sizeof(int))<0){
+	perror("IP_RECVTTL on rcv");
+	exit(1);
+    };
+    if (sockbuflen){
+	int n;
+	socklen_t nlen = sizeof(n);
+
+	if (getsockopt(s, SOL_SOCKET, SO_RCVBUF, &n, &nlen) == -1) {
+	    perror("getsockopt(RCVBUF)");
+	    exit(1);
+	}
+	if (setsockopt(s, SOL_SOCKET, SO_RCVBUF, &sockbuflen, 
+		       sizeof(sockbuflen)) == -1) {
+	    perror("setsockopt(RCVBUF)");
+	    exit(1);
+	}
+	fprintf(stderr, "Setting rx sockbuflen:%d -> %d\n", n, sockbuflen);
+    }
+
     if (bind(s, (struct sockaddr *) &addr, sizeof(addr)) < 0){
 	perror("bind");
 	exit(0);
