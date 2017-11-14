@@ -17,8 +17,9 @@
 # along with Mcast; see the file COPYING.
 
 
-FROM ubuntu:latest
+FROM ubuntu:16.04
 MAINTAINER Olof Hagsand <olof@hagsand.se>
+
 ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get update 
 RUN apt-get install -y apt-utils
@@ -29,12 +30,15 @@ RUN apt-get install -y net-tools # ifconfig + netstat
 RUN apt-get install -y iproute # ip command
 RUN apt-get install -y inetutils-ping 
 RUN apt-get install -y inetutils-traceroute
+RUN apt-get install -y nmap
+RUN apt-get install -y netcat
 #RUN apt-get install -y software-properties-common # netperf needs multiverse
 #RUN apt-cache search netperf
 
 
 COPY mcast /usr/bin/
 COPY mrcv /usr/bin/
+COPY ncat /usr/bin/
 COPY plugins/cycles /usr/bin/
 COPY plugins/dhrystones /usr/bin/
 COPY plugins/diskio_read /usr/bin/
