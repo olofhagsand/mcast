@@ -17,39 +17,15 @@
 # along with Mcast; see the file COPYING.
 
 
-FROM ubuntu:16.04
+FROM alpine
 MAINTAINER Olof Hagsand <olof@hagsand.se>
 
-ENV DEBIAN_FRONTEND noninteractive
-RUN apt-get update 
-RUN apt-get install -y apt-utils
-RUN apt-get install -y iperf3
-RUN apt-get install -y lsb-release
-RUN apt-get install -y tcpdump
-RUN apt-get install -y net-tools # ifconfig + netstat
-RUN apt-get install -y iproute # ip command
-RUN apt-get install -y inetutils-ping 
-RUN apt-get install -y inetutils-traceroute
-RUN apt-get install -y nmap
-RUN apt-get install -y netcat
-#RUN apt-get install -y software-properties-common # netperf needs multiverse
-#RUN apt-cache search netperf
-
+RUN apk add --update iperf3 tcpdump
+RUN apk add --update net-tools # ifconfig + netstat
+RUN apk add --update nmap mini_httpd
 
 COPY mcast /usr/bin/
 COPY mrcv /usr/bin/
-COPY ncat /usr/bin/
-COPY plugins/cycles /usr/bin/
-COPY plugins/dhrystones /usr/bin/
-COPY plugins/diskio_read /usr/bin/
-COPY plugins/diskio_write /usr/bin/
-COPY plugins/diskio_write_rnd /usr/bin/
-COPY plugins/grideye_iwget /usr/bin/
-COPY plugins/grideye_sysinfo /usr/bin/
-COPY plugins/grideye_wlan /usr/bin/
-COPY plugins/mem_read /usr/bin/
-COPY netperf-2.7.0/src/netperf /usr/bin/
-COPY netperf-2.7.0/src/netserver /usr/bin/
 
 #ENTRYPOINT ["mcast"]
 
