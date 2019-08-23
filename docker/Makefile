@@ -20,7 +20,7 @@
 
 prefix 		= /usr/local
 
-image           = olofhagsand/mcast
+IMAGE           = olofhagsand/mcast
 
 all:
 	@echo "Run make docker to build docker image"
@@ -34,10 +34,10 @@ distclean: clean
 docker:	
 	cp ../mcast .
 	cp ../mrcv .
-	sudo docker build -t $(image) .
+	sudo docker build -t $(IMAGE) .
 
 push:	
-	sudo docker push $(image)
+	sudo docker push $(IMAGE)
 
 install:
 

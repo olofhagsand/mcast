@@ -23,11 +23,23 @@ MAINTAINER Olof Hagsand <olof@hagsand.se>
 RUN apk add --update iperf3 tcpdump
 RUN apk add --update net-tools # ifconfig + netstat
 RUN apk add --update nmap mini_httpd
+RUN apk add --update curl
 
-COPY mcast /usr/bin/
-COPY mrcv /usr/bin/
+RUN mkdir /mcast
+WORKDIR /mcast
 
-#ENTRYPOINT ["mcast"]
+COPY mcast mcast
+COPY mrcv mrcv
+COPY start.sh start.sh
+
+RUN install start.sh mcast mrcv /usr/bin
+
+# For mini_httpd
+EXPOSE 80
+
+# Run start script
+CMD /usr/bin/start.sh
+
 
 
 
