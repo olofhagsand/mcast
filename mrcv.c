@@ -89,7 +89,7 @@ static int debug = 0;
 static char hostname0[64];	/* name of this host */
 static int pkts = 0;		/* packets received counter */
 static void doexit(int);
-static int  nr_nobufs = 0;  /* global variable to log nr of buf overflows */
+//static int  nr_nobufs = 0;  /* global variable to log nr of buf overflows */
 
 struct timeval firstpkt, lastpkt;
 
@@ -255,10 +255,11 @@ int
 netw_join(int s, unsigned int addr, unsigned short port, int ifaddr)
 {
     struct ip_mreq mreq;
-    int size, len;
-
+#if 0
+    int            size;
 #if 1
     struct sockaddr_in maddr;
+
     maddr.sin_family = AF_INET;
 #define CAN_BIND_TO_MULTICAST
 #if defined(CAN_BIND_TO_MULTICAST)
@@ -270,7 +271,7 @@ netw_join(int s, unsigned int addr, unsigned short port, int ifaddr)
     /* Here I bind to INADDR_ANY, and JOIN to one address ,
        Alternatively, we could BIND to a specific adress.
     */
-#if 0
+
     if (bind(s, (struct sockaddr *) &maddr, sizeof(maddr)) < 0) {
 	perror("bind");
 	fprintf(stderr, "netw_join: can't bind to UDP multicast port\n");
@@ -284,7 +285,7 @@ netw_join(int s, unsigned int addr, unsigned short port, int ifaddr)
 	perror("setsockopt ip_add_membership");
 	fprintf(stderr, "Hint: Old multicast kernel?\n");
     }
-    len = sizeof(size);
+    //    len = sizeof(size);
     return 0;
 }
 
@@ -390,13 +391,18 @@ usage(char *argv0)
     exit(0);
 }
 
+#ifdef NOTUSED
 /*
  * Format of sendbuf:
  * sequence:32
  * timeval:64
  */
 static int
-send_one(int s, struct sockaddr *addr, int addrlen, char *buf, int len)
+send_one(int              s,
+	 struct sockaddr *addr,
+	 int              addrlen,
+	 char            *buf,
+	 int              len)
 {
     struct timeval t;
 
@@ -404,7 +410,7 @@ send_one(int s, struct sockaddr *addr, int addrlen, char *buf, int len)
     memcpy(buf+sizeof(int)+sizeof(t), &t, sizeof(t)); /* XXX: not byte-swapped */
     if ((sendto(s, buf, len, 0x0, addr, addrlen)) < 0){
 	if (errno == ENOBUFS) {/* try again if ifq is empty */
-	    nr_nobufs++;
+	    //	    nr_nobufs++;
 	    sockerror("sendto");
 	    return 0;
 	}
@@ -413,7 +419,7 @@ send_one(int s, struct sockaddr *addr, int addrlen, char *buf, int len)
     }
     return 0;
 }
-
+#endif
 
 int
 main(int   argc, 
@@ -423,9 +429,9 @@ main(int   argc,
     int                s;
     int                c;
     int                saddr;
-    int                caddr;
+    int                caddr = 0;
     int                conn = 0;
-    struct in_addr     ifaddr;
+    struct in_addr     ifaddr = {0,};
     unsigned short     port;
     struct sockaddr_in addr;
     char              *pstr;

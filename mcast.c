@@ -404,7 +404,7 @@ ifname2addr(const char *ifname, struct in_addr *ifaddr)
     bzero(&ifr, sizeof(ifr));
     ifr.ifr_addr.sa_family = AF_INET;
     (void) strncpy(ifr.ifr_name, ifname, sizeof(ifr.ifr_name));
-    if (ioctl(s, SIOCGIFADDR, (caddr_t)&ifr) < 0) {
+    if (ioctl(s, SIOCGIFADDR, (void*)&ifr) < 0) {
 	perror("ioctl SIOCGIFADDR");
 	close(s);
 	return -1;
@@ -625,7 +625,7 @@ main(int argc, char *argv[])
 #endif
     if (ifname || lport != 0) {      /* Bind local port number */
 	struct sockaddr_in myaddr;
-	int myaddrlen = sizeof(myaddr);
+	socklen_t myaddrlen = sizeof(myaddr);
 
 	if (ifname){
 	    memset(&myaddr, 0, sizeof(myaddr));
@@ -649,10 +649,10 @@ main(int argc, char *argv[])
     }
 #ifdef IP_TOS
     if (tos) {
-	int tos0 = 0, tlen;
+	socklen_t tos0 = 0, tlen;
 	tlen = sizeof(tos);
 	if (getsockopt(s, IPPROTO_IP, IP_TOS,
-		       (char *) &tos0, &tlen) < 0){
+		       (void *) &tos0, &tlen) < 0){
 	    sockerror("getsockopt IP_TOS");  
 	}
 	else {
@@ -796,7 +796,7 @@ main(int argc, char *argv[])
 	else
 	    if (FD_ISSET(s, &fdset)) {
 		struct sockaddr_in from;
-		int fromlen;
+		socklen_t          fromlen;
 		fromlen = sizeof(from);
 		len = recvfrom(s, sendbuf, 1500, 0x0, (struct sockaddr *)&from, &fromlen);
 		if (len < 0){

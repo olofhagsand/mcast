@@ -20,7 +20,7 @@
 AC_INIT(mcast.c)
 
 # Default CFLAGS unless set by environment.
-: ${CFLAGS="-O2"}
+: ${CFLAGS="-O2 -Wall"}
 
 AC_SUBST(CC)
 AC_SUBST(CFLAGS)
@@ -55,5 +55,6 @@ AC_TRY_COMPILE([#include <sys/types.h>
  AC_DEFINE(HAVE_SIN_LEN)],
  AC_MSG_RESULT(no))
 #
-AC_OUTPUT(Makefile,
-	)
+AC_OUTPUT(Makefile
+	  docker/Makefile
+)
