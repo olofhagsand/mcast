@@ -310,7 +310,7 @@ netw_leave(int sock, unsigned int addr)
 void 
 mcast_init(int s)
 {
-    u_char value = 1;
+    unsigned char value = 1;
     int one = 1;
 
     if (setsockopt(s, SOL_SOCKET, SO_REUSEADDR,
@@ -344,7 +344,7 @@ ifname2addr(const char *ifname, struct in_addr *ifaddr)
     bzero(&ifr, sizeof(ifr));
     ifr.ifr_addr.sa_family = AF_INET;
     (void) strncpy(ifr.ifr_name, ifname, sizeof(ifr.ifr_name));
-    if (ioctl(s, SIOCGIFADDR, (caddr_t)&ifr) < 0) {
+    if (ioctl(s, SIOCGIFADDR, (void *)&ifr) < 0) {
 	fprintf(stderr, "ioctl SIOCGIFADDR %s\n", ifname);
 	return -1;
     }

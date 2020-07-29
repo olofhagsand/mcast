@@ -424,7 +424,7 @@ main(int argc, char *argv[])
     int                n;
     int                saddr;
     unsigned short     port;
-    u_char             ttl = DEFAULT_TTL;
+    unsigned char      ttl = DEFAULT_TTL;
     char              *pstr;
     char               hostname[64];
     char               hostname0[64];

@@ -1,6 +1,7 @@
 #!/bin/sh
 # Start script for mcast test container
-# Copied to container by Dockerfile and triggered at start by CMD commnd
+# This script is copied into the container on build time 
+# and triggered at start by CMD commnd
 
 DIR=/mcast
 WDIR=$DIR/www

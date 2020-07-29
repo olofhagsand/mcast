@@ -1,6 +1,6 @@
 # Makefile for MCAST.
 #
-# Copyright (C) 2001,2016 Olof Hagsand
+# Copyright (C) 2001,2016,2020 Olof Hagsand
 #
 # This software is a part of Mcast. A very simple traffic generator
 # and analyzer especially tuned for IP multicast, although it is
@@ -16,33 +16,33 @@
 # You should have received a copy of the GNU General Public License
 # along with Mcast; see the file COPYING.
 
-
 FROM alpine
 MAINTAINER Olof Hagsand <olof@hagsand.se>
 
+RUN mkdir /mcast
+RUN mkdir /mcast/build
+
+# clone and build mcast source 
+WORKDIR /mcast
+COPY mcast .
+
+RUN apk add --update make build-base gcc
+RUN ./configure --prefix=/mcast/build
+RUN make
+RUN make install
+
+COPY start.sh start.sh
+
+RUN install start.sh mcast mrcv /usr/bin
+
+# Install tools
 RUN apk add --update iperf3 tcpdump
 RUN apk add --update net-tools # ifconfig + netstat
 RUN apk add --update nmap mini_httpd
 RUN apk add --update curl
-
-RUN mkdir /mcast
-WORKDIR /mcast
-
-COPY mcast mcast
-COPY mrcv mrcv
-COPY start.sh start.sh
-
-RUN install start.sh mcast mrcv /usr/bin
 
 # For mini_httpd
 EXPOSE 80
 
 # Run start script
 CMD /usr/bin/start.sh
-
-
-
-
-
-
-
