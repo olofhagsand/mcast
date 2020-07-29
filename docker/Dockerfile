@@ -19,6 +19,12 @@
 FROM alpine
 MAINTAINER Olof Hagsand <olof@hagsand.se>
 
+# Install tools (if two-step do this last)
+RUN apk add --update iperf3 tcpdump
+RUN apk add --update net-tools # ifconfig + netstat
+RUN apk add --update nmap mini_httpd
+RUN apk add --update curl
+
 RUN mkdir /mcast
 RUN mkdir /mcast/build
 
@@ -35,14 +41,9 @@ COPY start.sh start.sh
 
 RUN install start.sh mcast mrcv /usr/bin
 
-# Install tools
-RUN apk add --update iperf3 tcpdump
-RUN apk add --update net-tools # ifconfig + netstat
-RUN apk add --update nmap mini_httpd
-RUN apk add --update curl
 
-# For mini_httpd
-EXPOSE 80
+# For mini_httpd and mrcv
+EXPOSE 80/tcp 7878/udp
 
 # Run start script
 CMD /usr/bin/start.sh

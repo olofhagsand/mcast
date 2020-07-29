@@ -42,4 +42,6 @@ chown minihttpd $CGDIR/reply.sh
 chmod 755 $CGDIR/reply.sh 
 
 >&2 echo "mini_httpd -C $FILE"
-mini_httpd -D -C $FILE
+mini_httpd -D -C $FILE &
+
+/usr/bin/mrcv 127.0.0.1:7878
